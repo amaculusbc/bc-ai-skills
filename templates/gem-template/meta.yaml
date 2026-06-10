@@ -1,0 +1,11 @@
+name: [Gem Name]
+slug: [gem-slug]
+description: [one line — what it does]
+gem_url:   # paste the Gem's share link from Gemini
+owner: [name]
+version: 0.1.0
+uses:
+  - modules/voice/house-style.md
+  # - add the prompt modules this Gem uses
+status: draft
+last_updated: [YYYY-MM-DD]

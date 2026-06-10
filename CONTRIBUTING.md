@@ -1,21 +1,22 @@
 # Contributing
 
-## Naming
-- Skill folders: kebab-case, named by what they do — `article-writer`, `headline-generator`, `fact-checker`.
-- Shared blocks: kebab-case by topic — `action-network.md`, `responsible-gambling.md`.
+## Register a Gem
+1. Copy `templates/gem-template/` → `gems/<gem-slug>/` (kebab-case).
+2. Fill `meta.yaml`: name, description, **gem_url** (the share link), owner, version,
+   and the `uses:` list of modules.
+3. Paste a reference snapshot of the instructions into `gem.md`.
+4. Run `python scripts/build_registry.py` and open a PR.
 
-## Adding a skill
-1. Copy `templates/skill-template/` → `skills/<your-skill>/`.
-2. Fill in `gem.md`, `meta.yaml`, `README.md`, and at least one entry in `examples/test-cases.md`.
-3. Reference shared blocks in `meta.yaml` under `uses:` — don't paste voice/compliance text inline.
-4. Run `python scripts/build_registry.py` to refresh `registry.md`.
-5. Open a PR.
+## Add a prompt module
+- Drop it in the right `modules/` subfolder (`voice/`, `compliance/`, `formats/`, …),
+  kebab-case filename. Keep it self-contained so any Gem can attach it.
+
+## Keep it honest
+- Modules are referenced, never pasted into Gems. If you need a Gem to use a rule,
+  add the module to its `uses:` and attach it as a knowledge file (Drive = auto-updating).
+- Update `gem.md` whenever you change the live Gem, so the snapshot doesn't drift.
 
 ## PR checklist
-- [ ] `meta.yaml` is complete (owner, version, target models, last_tested).
-- [ ] Reuses shared blocks instead of duplicating them.
-- [ ] Has at least one test case with expected behavior.
+- [ ] `meta.yaml` has a working `gem_url`.
+- [ ] `uses:` lists real modules (the registry script validates this).
 - [ ] Registry rebuilt.
-
-## Versioning
-Semver in `meta.yaml`. Bump on any instruction change. Note what changed in the skill's README.

@@ -1,0 +1,13 @@
+name: Article Writer
+slug: article-writer
+description: Turns a brief into a publish-ready article draft in property voice.
+gem_url: https://gemini.google.com/gem/REPLACE_WITH_SHARE_LINK
+owner: antonio
+version: 1.0.0
+uses:
+  - modules/voice/house-style.md
+  - modules/voice/action-network.md
+  - modules/compliance/responsible-gambling.md
+  - modules/formats/article-schema.md
+status: live
+last_updated: 2026-06-10

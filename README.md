@@ -1,33 +1,31 @@
 # BC AI Skills
 
-Shared library of reusable AI **skills** for the team. Each skill is a self-contained
-bundle (instructions + knowledge + tests) that deploys as a **Gemini Gem** — but stays
-portable to Claude Projects, GPTs, or pipelines because the source is plain files.
+The go-to place to **find our Gems** and the **prompt modules** they're built from.
 
-## How it's organized
+Gems live in Gemini. This repo doesn't run them — it's the directory that points to
+them and houses the reusable building blocks.
 
-- `skills/` — one folder per skill. Each maps to one Gem.
-- `shared/` — reusable building blocks (brand voice, compliance rules, output formats).
-  Skills *reference* these instead of duplicating them.
-- `templates/` — copy `skill-template/` to start a new skill.
-- `scripts/` — helpers (registry builder, validation).
+## What's here
 
-## Using a skill
+- `registry.md` — **the front door.** Every Gem, what it does, and a link to open it.
+- `gems/` — one folder per Gem: its link + metadata + a reference snapshot of its instructions.
+- `modules/` — the **prompt modules** (voice, compliance, formats). Reusable blocks you
+  pull from when building a Gem or any custom prompt.
+- `templates/` — copy `gem-template/` to register a new Gem.
+- `scripts/build_registry.py` — rebuilds `registry.md` and checks every `uses:` path exists.
 
-Each skill has one shared, live Gem. Grab its link from `registry.md` (or the skill's
-`gem_url` in `meta.yaml`) and use it directly — don't make your own copy.
+## Find & use a Gem
 
-## Building / updating a skill (maintainers)
+Open `registry.md`, click the Gem's link. Done — the Gem is live in Gemini.
 
-The repo is the source of truth; the Gem is the runtime.
-1. Edit `gem.md` (instructions) and `meta.yaml` (incl. `gem_url`).
-2. Create/update the Gem: paste `gem.md`, attach the `uses:` shared blocks + `knowledge/` files.
-3. Run `python scripts/build_registry.py`.
+## Build a Gem (or any prompt) from modules
 
-> Gems don't sync from GitHub. When a shared block changes, re-upload it to the Gems
-> that use it — the registry's `uses:` validation tells you the blast radius.
+1. Pick the modules you need from `modules/` (voice + compliance + format + your task).
+2. In Gemini: create the Gem, paste the task instructions, attach those modules as
+   **knowledge files**. Tip: attach them from **Google Drive** so edits to a module
+   propagate to the Gem automatically.
+3. Register it: copy `templates/gem-template/` → `gems/<your-gem>/`, fill in `meta.yaml`
+   (paste the share link), run `python scripts/build_registry.py`, open a PR.
 
-## Adding a skill
-
-Copy `templates/skill-template/`, rename it (kebab-case), fill in the files, open a PR.
-See `CONTRIBUTING.md`.
+> The modules are the single source of truth. Whether a Gem references them via Drive,
+> or a pipeline reads and concatenates them at runtime, you edit the block in one place.
