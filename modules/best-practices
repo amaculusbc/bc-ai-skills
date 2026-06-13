@@ -1,1 +1,182 @@
 
+# Prompt Engineering Best Practices
+
+A general reference for writing reliable, production-grade prompts. These
+principles are distilled from patterns that hold up across domains — they
+assume nothing about the specific task. Adapt the examples; keep the structure.
+
+---
+
+## Set up the frame
+
+### 1. Open with a clear role and operating mode
+State who the model is and how it should behave before giving it work. A role
+("you are an expert editor", "you operate as an automated data-processing
+system") primes tone, depth, and judgment, and reduces hedging on tasks the
+model is allowed to just do.
+
+### 2. Define every input explicitly
+List the variables the prompt depends on and label them. The model should never
+have to guess what a value represents or where it comes from. Ambiguous inputs
+are the most common source of inconsistent output across runs.
+
+### 3. Establish precedence when rules can conflict
+If a prompt pulls from multiple sources (a base instruction set plus a style
+guide, a reference file, retrieved data), say which one wins in a disagreement.
+Without an explicit hierarchy the model resolves conflicts inconsistently.
+Example: "Where the reference file and these instructions disagree, these
+instructions win."
+
+---
+
+## Make it accurate
+
+### 4. Ground factual claims in retrieved data
+The single largest reliability gain: forbid the model from writing facts from
+memory and require that every figure, name, date, or claim trace to something
+obtained during the run. State it plainly — "if a tool did not return it, you do
+not write it" — and repeat that it applies everywhere, not just in one section.
+
+### 5. Default to omission over fabrication
+Pair grounding with an explicit fallback for missing data: leave it out and flag
+the gap, rather than filling it with a plausible guess. Models will invent to
+satisfy a format; an instruction to omit gives them permission not to.
+
+### 6. Prefer self-contained references over context-dependent ones
+For any output that will be read later or reused, ban references that silently
+expire — "yesterday", "the current version", "recently". Require absolute,
+self-anchoring phrasing (a specific date, a named version). This keeps content
+correct after the moment it was generated.
+
+---
+
+## Structure the work
+
+### 7. Decompose the task into ordered, numbered steps
+Break a complex job into discrete phases (gather, analyze, draft, check) and
+number them. Sequencing prevents the model from skipping ahead — for instance,
+writing before it has gathered what it needs. Each step should have one clear
+job.
+
+### 8. Add a planning or anchor step before action
+Have the model write out key reference state first — a plan, the relevant
+constraints, the facts it just established — before it produces the deliverable.
+This externalizes reasoning the model would otherwise do implicitly and catch
+errors early. It works even when the "plan" is just a few lines it writes for
+its own use.
+
+### 9. Make conditional logic explicit
+Spell out branches and routing as clear "if X, do Y; otherwise do Z" rules
+rather than leaving them implied. State when a step should be skipped entirely.
+Ambiguous conditionals are where models improvise, so name the path for each
+case the prompt actually expects.
+
+---
+
+## Control the output
+
+### 10. Preserve existing structure and voice when editing
+When the task modifies existing content rather than creating it fresh, instruct
+the model to mirror the original's format and rhythm — lists stay lists, short
+paragraphs stay short, tables stay tables. Models tend to "improve" structure
+into a uniform block unless told to match what's there.
+
+### 11. Specify the output format with a template
+Give an exact skeleton of the expected output, including labels and the order of
+sections. A concrete template removes formatting guesswork and makes results
+easy to parse or validate downstream. Be explicit about formatting that breaks
+your pipeline (e.g., "plain text only, no Markdown bold").
+
+### 12. Bound scope and length
+Put numeric limits on the work: target word counts, a maximum number of items,
+"one example per source". Caps prevent runaway output and stop the model from
+padding. Tie the count to something real where you can — e.g., the number of
+edits equals the number of problems found, not an arbitrary quota.
+
+---
+
+## Enforce quality
+
+### 13. Build a mandatory self-audit checklist
+Before the final answer, have the model re-read its own draft against a short
+checklist and fix anything that fails. List the specific checks (grounding,
+format, banned language, scope). A self-review pass catches a meaningful share
+of errors the first draft introduces, at low cost.
+
+### 14. Give negative examples, not just positive instructions
+Tell the model what to avoid, concretely. This works on two levels:
+- Words and phrases — a banned list of clichés, filler, and tells specific to
+  your context.
+- Structural patterns — habits that read as machine-written even when no banned
+  word appears (e.g., reflexive three-item lists, restating a point right after
+  making it, empty hedging like "it is worth noting", opening with "Overall").
+Naming the anti-pattern is more effective than asking for "natural" writing.
+
+---
+
+## Handle the edges
+
+### 15. Define failure modes and a completion contract
+Say what to do when the task can't be completed normally: what to output if no
+usable data was found, and a requirement to always return a valid, non-empty
+response. Specify an exact failure string if downstream systems need to detect
+it. This stops the model from either giving up silently or fabricating to avoid
+an empty answer.
+
+### 16. Set a tool or effort budget
+For agentic prompts, cap the number of tool calls or attempts and say what to do
+on failure (change parameters, then fall back to what's verified). A budget
+prevents loops and forces the model to prioritize accuracy over exhaustiveness
+when it runs low.
+
+---
+
+## Anti-patterns to avoid in your own prompt-writing
+
+These are author-side mistakes — failures in how the prompt is written, separate
+from what you tell the model to avoid in its output (principle 14).
+
+- Contradictory rules. "Be thorough but keep it brief" forces the model to pick
+  one and guess which. If two goals compete, rank them or give a concrete bound
+  ("complete but under 200 words").
+- Undefined qualifiers. "Use good judgment", "be professional", "make it
+  engaging" push the decision back onto the model without telling it the
+  standard. Define the term or give an example of what passes.
+- Negation without a replacement. "Don't use a formal tone" leaves an open space
+  the model fills unpredictably. Say what to do instead.
+- Rule overload. Past a point, every added rule dilutes the others — the model
+  can't weight thirty equally-stated constraints. Keep the must-never set small
+  and explicit; demote the rest to guidance.
+- Burying the critical instruction. If a rule matters most, it shouldn't sit in
+  the middle of paragraph nine. Put non-negotiables at the top and restate them
+  where they apply.
+- Untestable instructions. If you can't check whether a rule was followed by
+  looking at the output, the model can't reliably follow it either. Prefer rules
+  with an observable result.
+- Examples that contradict the instructions. The model trusts examples over
+  prose. A sample output that breaks a stated rule trains the behavior you said
+  to avoid — keep examples consistent with the spec.
+- Effort theater. "Think very hard", "this is extremely important", "do your
+  absolute best" add no constraint. Replace them with the specific behavior you
+  actually want.
+- Wall-of-text prompts. A single unbroken block hides structure and makes rules
+  easy to miss. Use sections, ordered steps, and whitespace — the prompt's own
+  formatting affects how reliably it's parsed.
+
+---
+
+## Quick checklist
+
+- [ ] Role and operating mode stated
+- [ ] Inputs labeled and defined
+- [ ] Rule precedence resolved
+- [ ] Facts grounded in retrieved data; omit when unverified
+- [ ] References are self-contained, not time-relative
+- [ ] Task broken into ordered steps with a planning step first
+- [ ] Conditionals and skip-conditions explicit
+- [ ] Output format and length specified
+- [ ] Existing structure preserved on edits
+- [ ] Self-audit checklist included
+- [ ] Negative examples given (words and structural patterns)
+- [ ] Failure mode and completion contract defined
+- [ ] Tool/effort budget set (for agentic prompts)
